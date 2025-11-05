@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Resume Scorer - Analyze your resume against job descriptions">
+    <title>Resume Scorer - ATS Analysis Tool</title>
+
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>">
+
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <h1 class="main-title">Resume Scorer</h1>
+            <p class="subtitle">Developed for demo at Data Science Club</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+
+            <!-- Upload Section -->
+            <section class="upload-section">
+                <div class="upload-grid">
+
+                    <!-- Resume Upload -->
+                    <div class="upload-card">
+                        <h3>Upload Resume</h3>
+                        <div class="file-upload-wrapper">
+                            <div class="file-upload-area" id="fileUploadArea">
+                                <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                </svg>
+                                <p class="upload-text">Click or drag resume here</p>
+                                <p class="upload-subtext">PDF, DOCX, or TXT (Max 5MB)</p>
+                                <input type="file" id="resumeFile" accept=".pdf,.docx,.doc,.txt" hidden>
+                            </div>
+                            <div class="file-info" id="fileInfo" style="display: none;">
+                                <span class="file-name" id="fileName"></span>
+                                <button class="remove-file-btn" id="removeFileBtn" type="button">✕</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Job Description Input -->
+                    <div class="upload-card">
+                        <h3>Paste Job Description</h3>
+                        <div class="job-description-wrapper">
+                            <textarea
+                                id="jobDescription"
+                                class="job-description-input"
+                                placeholder="Paste the job description here..."
+                                rows="8"
+                            ></textarea>
+                            <div class="sample-jobs">
+                                <label>Try a sample:</label>
+                                <div class="sample-buttons">
+                                    <button type="button" class="sample-btn" data-sample="data-scientist">Data Scientist</button>
+                                    <button type="button" class="sample-btn" data-sample="software-engineer">Software Engineer</button>
+                                    <button type="button" class="sample-btn" data-sample="marketing-manager">Marketing Manager</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Analyze Button -->
+                <div class="action-buttons">
+                    <button type="button" id="analyzeBtn" class="analyze-btn" disabled>
+                        <span class="btn-text">Analyze Resume</span>
+                        <span class="btn-loader" style="display: none;">
+                            <span class="spinner"></span>
+                            Analyzing...
+                        </span>
+                    </button>
+                </div>
+
+                <!-- Error Message -->
+                <div id="errorMessage" class="error-message" style="display: none;"></div>
+            </section>
+
+            <!-- Results Section (Hidden Initially) -->
+            <section id="resultsSection" class="results-section" style="display: none;">
+
+                <!-- Overall Score -->
+                <div class="score-overview">
+                    <h2>ATS Compatibility Score</h2>
+                    <div class="score-display">
+                        <div class="score-circle">
+                            <canvas id="scoreChart" width="200" height="200"></canvas>
+                            <div class="score-value">
+                                <span id="overallScore" class="score-number">0</span>
+                                <span class="score-label">/100</span>
+                            </div>
+                        </div>
+                        <div class="score-details">
+                            <div class="score-grade" id="scoreGrade">
+                                <span class="grade-label">Grade:</span>
+                                <span class="grade-value">-</span>
+                            </div>
+                            <div class="score-status" id="scoreStatus">
+                                <p class="status-text">Analyzing...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Score Breakdown -->
+                <div class="breakdown-section">
+                    <h3>Score Breakdown</h3>
+                    <div class="breakdown-chart-container">
+                        <canvas id="breakdownChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Detailed Metrics -->
+                <div class="metrics-section">
+                    <h3>Detailed Metrics</h3>
+                    <div class="metrics-grid" id="metricsGrid"></div>
+                </div>
+
+                <!-- Keyword Analysis -->
+                <div class="keyword-section">
+                    <h3>Keyword Analysis</h3>
+                    <div class="keyword-grid">
+                        <div class="keyword-card keyword-matched">
+                            <h4>✓ Matched Keywords</h4>
+                            <div class="keyword-count" id="matchedCount">0</div>
+                            <div class="keyword-list" id="matchedKeywords"></div>
+                        </div>
+                        <div class="keyword-card keyword-missing">
+                            <h4>✗ Missing Keywords</h4>
+                            <div class="keyword-count" id="missingCount">0</div>
+                            <div class="keyword-list" id="missingKeywords"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Skills Analysis -->
+                <div class="skills-section">
+                    <h3>Skills Analysis</h3>
+                    <div class="skills-content" id="skillsContent"></div>
+                </div>
+
+                <!-- Recommendations -->
+                <div class="recommendations-section">
+                    <h3>Recommendations</h3>
+                    <div class="recommendations-list" id="recommendationsList"></div>
+                </div>
+
+                <!-- Export Button -->
+                <div class="action-buttons">
+                    <button type="button" id="exportBtn" class="export-btn">
+                        <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Export PDF Report
+                    </button>
+                    <button type="button" id="analyzeAnotherBtn" class="secondary-btn">
+                        Analyze Another Resume
+                    </button>
+                </div>
+
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Resume Scorer | Data Science Club Demo</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>

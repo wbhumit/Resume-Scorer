@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /b /s \"c:\\Users\\wbhum\\Documents\\Projects\\Resume Scorer\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
